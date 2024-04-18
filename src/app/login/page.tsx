@@ -1,10 +1,11 @@
 "use client";
 import { Button, GetProp, Input, Layout, Space, Typography } from "antd";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import Title from "antd/es/skeleton/Title";
+import { useLogin } from "@/hooks/login";
+import { message } from "antd";
 
-const { Text, Link } = Typography;
+const { Text } = Typography;
 const Login: React.FC = () => {
   const numberRegex = /^[0-9\b]+$/;
   const [phone, setPhone] = useState<string>("");
@@ -14,17 +15,21 @@ const Login: React.FC = () => {
   const onOtpChange: GetProp<typeof Input.OTP, "onChange"> = (text) => {
     setOtpValues(text);
   };
-
+  const login = useLogin();
   const handlePhoneChange = (value: any) => {
     if (value === "" || numberRegex.test(value)) {
       setPhone(value);
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!otpStep) {
-      // TODO: Handle login request OTP
-      setOtpStep(true);
+      try {
+        await login.mutateAsync([phone]);
+        setOtpStep(true);
+      } catch (error) {
+        message.error((error as Error).message);
+      }
 
       return;
     }
